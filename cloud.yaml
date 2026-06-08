@@ -1,0 +1,7 @@
+apiVersion: example.crossplane.io/v1
+kind: Cloud
+metadata:
+  name: my-cloud
+  namespace: default
+spec:
+  image: "foo"

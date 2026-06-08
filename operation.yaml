@@ -1,0 +1,22 @@
+apiVersion: ops.crossplane.io/v1alpha1
+kind: Operation
+metadata:
+  name: check-cert-expiry
+spec:
+  mode: Pipeline
+  pipeline:
+  - step: check-certificate
+    functionRef:
+      name: crossplane-contrib-function-python
+    input:
+      apiVersion: python.fn.crossplane.io/v1beta1
+      kind: Script
+      script: |
+        from datetime import datetime
+        from crossplane.function import request, response
+
+        def operate(req, rsp):
+            timestamp = datetime.now().strftime("%I:%M%p on %B %d, %Y")
+            response.set_output(rsp, {
+                "timestamp": timestamp
+            })

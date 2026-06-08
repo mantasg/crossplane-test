@@ -1,0 +1,85 @@
+apiVersion: pkg.crossplane.io/v1beta1
+kind: Function
+metadata:
+  name: crossplane-contrib-function-auto-ready
+spec:
+  package: xpkg.crossplane.io/crossplane-contrib/function-auto-ready:v0.6.1
+---
+apiVersion: apiextensions.crossplane.io/v2
+kind: CompositeResourceDefinition
+metadata:
+  name: clouds.example.crossplane.io
+spec:
+  scope: Namespaced
+  group: example.crossplane.io
+  names:
+    kind: Cloud
+    plural: clouds
+  versions:
+  - name: v1
+    served: true
+    referenceable: true
+    schema:
+     openAPIV3Schema:
+       type: object
+       properties:
+        spec:
+          type: object
+          properties:
+            image:
+              description: The app's OCI container image.
+              type: string
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: cloud-templated-yaml
+spec:
+  compositeTypeRef:
+    apiVersion: example.crossplane.io/v1
+    kind: Cloud
+  mode: Pipeline
+  pipeline:
+  - step: create-cloud
+    functionRef:
+      name: crossplane-contrib-function-go-templating
+    input:
+      apiVersion: gotemplating.fn.crossplane.io/v1beta1
+      kind: GoTemplate
+      source: Inline
+      inline:
+        template: |
+          ---
+          apiVersion: ec2.aws.m.upbound.io/v1beta1
+          kind: Instance
+          metadata:
+            generateName: crossplane-instance-
+            namespace: default
+            annotations:
+              gotemplating.fn.crossplane.io/composition-resource-name: instance
+          spec:
+            forProvider:
+              region: eu-west-1
+              ami: ami-05e02ad8bf2ca5107
+              instanceType: t3.micro
+              tags:
+                Name: crossplane-test
+          ---
+          apiVersion: s3.aws.m.upbound.io/v1beta1
+          kind: Bucket
+          metadata:
+            annotations:
+              gotemplating.fn.crossplane.io/composition-resource-name: bucket
+            namespace: default
+            generateName: crossplane-bucket-
+          spec:
+            forProvider:
+              region: eu-west-1
+          ---
+          apiVersion: example.crossplane.io/v1
+          kind: Cloud
+          metadata:
+            namespace: default
+  - step: automatically-detect-ready
+    functionRef:
+      name: crossplane-contrib-function-auto-ready

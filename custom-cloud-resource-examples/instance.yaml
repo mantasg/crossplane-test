@@ -1,0 +1,22 @@
+apiVersion: ec2.aws.m.upbound.io/v1beta1
+kind: Instance
+metadata:
+  name: sample-instance
+spec:
+  forProvider:
+    region: eu-west-1
+    ami: ami-05e02ad8bf2ca5107
+    instanceType: t3.micro
+
+
+    #blockDeviceMappings:
+    # - deviceName: /dev/sdx
+    #   ebs:
+    #     volumeSize: 20
+    #securityGroupRefs:
+    #  - name: sample-cluster-sg
+    #subnetIdRef:
+    #  name: sample-subnet1
+  #providerConfigRef:
+  #  name: default
+  #  kind: ProviderConfig
