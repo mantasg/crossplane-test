@@ -1,7 +1,7 @@
 apiVersion: ops.crossplane.io/v1alpha1
 kind: Operation
 metadata:
-  name: check-cert-expiry
+  name: test-operation
 spec:
   mode: Pipeline
   pipeline:
