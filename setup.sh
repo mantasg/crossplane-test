@@ -6,6 +6,8 @@ kind create cluster --name test --config cluster.yaml
 
 # helm repo add headlamp https://kubernetes-sigs.github.io/headlamp/
 # helm repo add crossplane-stable https://charts.crossplane.io/stable
+# helm repo add gitea https://dl.gitea.com/charts
+# helm repo add argo https://argoproj.github.io/argo-helm
 # helm repo update
 
 helm install my-headlamp headlamp/headlamp \
@@ -48,6 +50,24 @@ kubectl wait deployment \
   -l gateway.envoyproxy.io/owning-gateway-name=eg \
   --for=condition=Available \
   --timeout=120s
+
+################################################
+
+helm install gitea oci://docker.gitea.com/charts/gitea \
+  --version 12.6.0 \
+  --set gitea.admin.username=mantasgudynas \
+  --set gitea.admin.password=gitea \
+  --set gitea.config.server.ROOT_URL=http://localhost/gitea/
+
+################################################
+
+ARGOCD_PASS=$(htpasswd -nbBC 10 "" argocd | tr -d ':\n' | sed 's/$2y/$2a/')
+helm install argocd argo/argo-cd \
+  --version 9.5.21 \
+  --set configs.params."server\.insecure"=true \
+  --set configs.params."server\.basehref"=/argocd \
+  --set configs.params."server\.rootpath"=/argocd \
+  --set configs.secret.argocdServerAdminPassword="${ARGOCD_PASS}"
 
 ################################################
 

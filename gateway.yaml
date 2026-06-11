@@ -73,7 +73,6 @@ spec:
       backendRefs:
         - name: frontend   # ← replace with your service name if different
           port: 80
-
     - matches:
         - path:
             type: PathPrefix
@@ -81,6 +80,35 @@ spec:
       backendRefs:
         - name: my-headlamp
           namespace: kube-system
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /kibana
+      backendRefs:
+        - name: kibana
+          namespace: default
+          port: 5601
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /gitea
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: gitea-http
+          port: 3000
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /argocd
+      backendRefs:
+        - name: argocd-server
+          namespace: default
           port: 80
 
 ---

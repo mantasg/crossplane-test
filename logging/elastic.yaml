@@ -1,8 +1,9 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: elasticsearch
 spec:
+  serviceName: elasticsearch
   selector:
     matchLabels:
       component: elasticsearch
@@ -13,10 +14,18 @@ spec:
     spec:
       containers:
       - name: elasticsearch
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.4.1
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.15.2
         env:
         - name: discovery.type
           value: single-node
+        - name: xpack.security.enabled
+          value: "false"
+        - name: xpack.security.http.ssl.enabled
+          value: "false"
+        - name: xpack.security.transport.ssl.enabled
+          value: "false"
+        - name: ES_JAVA_OPTS
+          value: "-Xmx1g -Xms1g"
         ports:
         - containerPort: 9200
           name: http
@@ -28,6 +37,18 @@ spec:
           requests:
             cpu: 500m
             memory: 4Gi
+        volumeMounts:
+        - name: es-data
+          mountPath: /usr/share/elasticsearch/data
+  volumeClaimTemplates:
+  - metadata:
+      name: es-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 30Gi
+      # storageClassName: standard  # uncomment and set if needed
 ---
 apiVersion: v1
 kind: Service
@@ -58,11 +79,15 @@ spec:
     spec:
       containers:
       - name: kibana
-        image: docker.elastic.co/kibana/kibana:7.4.1
+        image: docker.elastic.co/kibana/kibana:8.15.2
         env:
         - name: ELASTICSEARCH_URL
           value: http://elasticsearch:9200
         - name: XPACK_SECURITY_ENABLED
+          value: "true"
+        - name: SERVER_BASEPATH
+          value: "/kibana"
+        - name: SERVER_REWRITEBASEPATH
           value: "true"
         ports:
         - containerPort: 5601

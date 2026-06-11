@@ -33,9 +33,6 @@ subjects:
   name: fluentd
   namespace: kube-system
 ---
-
-
-
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -45,8 +42,9 @@ data:
   filter-kubernetes-labels.conf: |
     <filter kubernetes.**>
       @type record_transformer
+      enable_ruby true
       <record>
-        kubernetes ${record["kubernetes"].tap { |k| k["labels"]&.delete("app") }}
+        kubernetes ${record["kubernetes"].tap { |k| k["labels"]&.delete("app") } }
       </record>
     </filter>
 
@@ -81,14 +79,16 @@ spec:
       serviceAccount: fluentd
       serviceAccountName: fluentd
       terminationGracePeriodSeconds: 30
-      tolerations:
-      - key: node-role.kubernetes.io/control-plane
-        operator: Exists
-        effect: NoSchedule
-
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: DoesNotExist
       containers:
       - name: fluentd
-        image: fluent/fluentd-kubernetes-daemonset:v1.19-debian-elasticsearch7-1
+        image: fluent/fluentd-kubernetes-daemonset:v1.19-debian-elasticsearch8-amd64-1
         env:
           - name: FLUENT_ELASTICSEARCH_HOST
             value: "elasticsearch.default"
@@ -107,7 +107,7 @@ spec:
           - name: FLUENT_CONTAINER_TAIL_PARSER_TYPE
             value: /^(?<log>.*)$/ #  #value: /^(?<time>.+) (?<stream>stdout|stderr)( (?<logtag>.))? (?<log>.*)$/
           - name: FLUENT_ELASTICSEARCH_LOGSTASH_PREFIX
-            value: "logstash"
+            value: "logs"
 
         volumeMounts:
         - name: varlog
