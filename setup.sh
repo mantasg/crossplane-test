@@ -4,11 +4,11 @@ kind create cluster --name test --config cluster.yaml
 
 #####################################
 
-# helm repo add headlamp https://kubernetes-sigs.github.io/headlamp/
-# helm repo add crossplane-stable https://charts.crossplane.io/stable
-# helm repo add gitea https://dl.gitea.com/charts
-# helm repo add argo https://argoproj.github.io/argo-helm
-# helm repo update
+helm repo add headlamp https://kubernetes-sigs.github.io/headlamp/
+helm repo add crossplane-stable https://charts.crossplane.io/stable
+helm repo add gitea https://dl.gitea.com/charts
+helm repo add argo https://argoproj.github.io/argo-helm
+helm repo update
 
 helm install my-headlamp headlamp/headlamp \
   --version 0.42.0 \
