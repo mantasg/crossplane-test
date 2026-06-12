@@ -71,6 +71,14 @@ helm install argocd argo/argo-cd \
 
 ################################################
 
+helm install prometheus oci://ghcr.io/prometheus-community/charts/kube-prometheus-stack \
+  --set grafana.adminPassword='grafana' \
+  --set grafana."grafana\.ini".server.domain=localhost \
+  --set grafana."grafana\.ini".server.root_url='http://localhost/grafana' \
+  --set grafana."grafana\.ini".server.serve_from_sub_path=true
+
+################################################
+
 echo
 echo "http://localhost/headlamp/"
 echo
