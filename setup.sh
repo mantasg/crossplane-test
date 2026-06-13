@@ -5,6 +5,7 @@ kind create cluster --name test --config cluster.yaml
 #####################################
 
 helm repo add headlamp https://kubernetes-sigs.github.io/headlamp/
+helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
 helm repo add crossplane-stable https://charts.crossplane.io/stable
 helm repo add gitea https://dl.gitea.com/charts
 helm repo add argo https://argoproj.github.io/argo-helm
@@ -19,6 +20,8 @@ kubectl wait --timeout=5m \
   --namespace kube-system \
   deployment my-headlamp \
   --for=condition=Available
+
+helm upgrade --install metrics-server metrics-server/metrics-server --set args={--kubelet-insecure-tls}
 
 ######################################
 
